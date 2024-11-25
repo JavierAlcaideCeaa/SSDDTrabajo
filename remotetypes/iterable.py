@@ -1,11 +1,19 @@
-"""Needed classes for implementing the Iterable interface for different types of objects."""
-
-import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
-
-# TODO: It's very likely that the same Iterable implementation doesn't fit
-# for the 3 needed types. It is valid to implement 3 different classes implementing
-# the same interface and use an object from different implementations when needed.
-
+# iterable.py
+import RemoteTypes as rt
+from typing import Optional
+import Ice
 
 class Iterable(rt.Iterable):
-    """Skeleton for an Iterable implementation."""
+    def __init__(self, data) -> None:
+        self._data = data
+        self._index = 0
+        self._hash = hash(tuple(data))
+
+    def next(self, current: Optional[Ice.Current] = None) -> str:
+        if self._hash != hash(tuple(self._data)):
+            raise rt.CancelIteration()
+        if self._index >= len(self._data):
+            raise rt.StopIteration()
+        item = self._data[self._index]
+        self._index += 1
+        return item

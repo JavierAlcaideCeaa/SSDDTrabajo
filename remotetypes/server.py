@@ -10,9 +10,9 @@ from remotetypes.factory import Factory
 class Server(Ice.Application):
     """Ice.Application for the server."""
 
-    def __init__(self) -> None:
+    def _init_(self) -> None:
         """Initialise the Server objects."""
-        super().__init__()
+        super()._init_()
         self.logger = logging.getLogger(__file__)
 
     def run(self, args: list[str]) -> int:
