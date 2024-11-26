@@ -2,7 +2,6 @@
 import RemoteTypes as rt
 from typing import Optional
 import Ice
-import IcePy
 
 class RemoteListIterator(rt.Iterable):
     def __init__(self, storage):
@@ -56,8 +55,8 @@ class RemoteList(rt.RList):
         if self._iterator:
             self._iterator.mark_modified()
 
-    def pop(self, index: Ice.Unset = None, current: Optional[Ice.Current] = None) -> str:
-        if index is None or isinstance(index, Ice.Unset):
+    def pop(self, index: Optional[int] = Ice.Unset, current: Optional[Ice.Current] = None) -> str:
+        if index is Ice.Unset:
             item = self._storage.pop()
         else:
             try:
