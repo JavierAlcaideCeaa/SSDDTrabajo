@@ -3,10 +3,29 @@ import RemoteTypes as rt
 from typing import Optional
 import Ice
 
+class RemoteDictIterator(rt.Iterable):
+    def __init__(self, storage):
+        self._storage = storage
+        self._iterator = iter(storage.items())
+        self._modified = False
+
+    def next(self, current: Optional[Ice.Current] = None) -> str:
+        if self._modified:
+            raise rt.CancelIteration()
+        try:
+            key, value = next(self._iterator)
+            return f"{key}: {value}"
+        except StopIteration:
+            raise rt.StopIteration()
+
+    def mark_modified(self):
+        self._modified = True
+
 class RemoteDict(rt.RDict):
     def __init__(self, identifier: str) -> None:
         self._storage = {}
         self.id_ = identifier
+        self._iterator = None
 
     def identifier(self, current: Optional[Ice.Current] = None) -> str:
         return self.id_
@@ -14,6 +33,8 @@ class RemoteDict(rt.RDict):
     def remove(self, item: str, current: Optional[Ice.Current] = None) -> None:
         if item in self._storage:
             del self._storage[item]
+            if self._iterator:
+                self._iterator.mark_modified()
         else:
             raise rt.KeyError(item)
 
@@ -27,11 +48,13 @@ class RemoteDict(rt.RDict):
         return hash(frozenset(self._storage.items()))
 
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
-        # Implementación del iterador
-        pass
+        self._iterator = RemoteDictIterator(self._storage)
+        return self._iterator
 
     def setItem(self, key: str, item: str, current: Optional[Ice.Current] = None) -> None:
         self._storage[key] = item
+        if self._iterator:
+            self._iterator.mark_modified()
 
     def getItem(self, key: str, current: Optional[Ice.Current] = None) -> str:
         if key in self._storage:
@@ -41,6 +64,9 @@ class RemoteDict(rt.RDict):
 
     def pop(self, key: str, current: Optional[Ice.Current] = None) -> str:
         if key in self._storage:
-            return self._storage.pop(key)
+            value = self._storage.pop(key)
+            if self._iterator:
+                self._iterator.mark_modified()
+            return value
         else:
             raise rt.KeyError(key)
