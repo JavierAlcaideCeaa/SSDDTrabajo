@@ -1,7 +1,7 @@
 # customset.py
 """Implementation of custom sets."""
 
-from typing import Optional
+from typing import Optional, Iterable
 
 
 class StringSet(set):
@@ -9,9 +9,8 @@ class StringSet(set):
 
     def __init__(
         self,
-        *args: tuple[object],
+        iterable: Optional[Iterable[str]] = None,
         force_upper_case: Optional[bool] = False,
-        **kwargs: dict[str, object],
     ) -> None:
         """Build an unordered collection of unique elements of type str.
 
@@ -20,10 +19,11 @@ class StringSet(set):
         """
         self.upper_case = force_upper_case
         super().__init__()
-        for item in args:
-            if not isinstance(item, str):
-                raise ValueError(f"Invalid value: {item}")
-            self.add(item)
+        if iterable:
+            for item in iterable:
+                if not isinstance(item, str):
+                    raise ValueError(f"Invalid value: {item}")
+                self.add(item)
 
     def add(self, item: str) -> None:
         """Add an element to a set. Checks the element type to be a str."""
