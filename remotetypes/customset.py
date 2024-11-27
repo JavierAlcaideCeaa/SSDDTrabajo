@@ -1,3 +1,4 @@
+# customset.py
 """Implementation of custom sets."""
 
 from typing import Optional
@@ -18,7 +19,11 @@ class StringSet(set):
         StringSet(iterable) -> new StringSet object
         """
         self.upper_case = force_upper_case
-        super().__init__(*args, **kwargs)
+        super().__init__()
+        for item in args:
+            if not isinstance(item, str):
+                raise ValueError(f"Invalid value: {item}")
+            self.add(item)
 
     def add(self, item: str) -> None:
         """Add an element to a set. Checks the element type to be a str."""
