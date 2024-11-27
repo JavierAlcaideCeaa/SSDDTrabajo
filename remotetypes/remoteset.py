@@ -1,31 +1,12 @@
 """Module for the RemoteSet class implementation."""
 
 from typing import Optional
-
-import Ice
 import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
 from remotetypes.customset import StringSet
-
-
-class RemoteSetIterator(rt.Iterable):
-    """Iterator for the RemoteSet class."""
-
-    def __init__(self, storage):
-        self._storage = storage
-        self._iterator = iter(storage)
-        self._modified = False
-
-    def next(self, current: Optional[Ice.Current] = None) -> str:
-        if self._modified:
-            raise rt.CancelIteration()
-        try:
-            return next(self._iterator)
-        except StopIteration:
-            raise rt.StopIteration()
-
-    def mark_modified(self):
-        self._modified = True
-
+from remotetypes.iterable import Iterable
+import json
+import os
+import Ice
 
 class RemoteSet(rt.RSet):
     """Implementation of the remote interface RSet."""
@@ -76,7 +57,7 @@ class RemoteSet(rt.RSet):
 
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
         """Create an iterable object."""
-        self._iterator = RemoteSetIterator(self._storage_)
+        self._iterator = Iterable(self._storage_)
         return self._iterator
 
     def add(self, item: str, current: Optional[Ice.Current] = None) -> None:
