@@ -3,6 +3,8 @@ from typing import Optional
 
 import Ice
 import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
+import json
+import os
 
 from remotetypes.customset import StringSet
 
@@ -15,6 +17,16 @@ class RemoteSet(rt.RSet):
         self._storage_ = StringSet()
         self.id_ = identifier
         self._iterator = None
+        self._load()
+
+    def _load(self):
+        if os.path.exists(f"{self.id_}.json"):
+            with open(f"{self.id_}.json", "r") as f:
+                self._storage_ = StringSet(json.load(f))
+
+    def _save(self):
+        with open(f"{self.id_}.json", "w") as f:
+            json.dump(list(self._storage_), f)
 
     def identifier(self, current: Optional[Ice.Current] = None) -> str:
         """Return the identifier of the object."""
@@ -24,6 +36,7 @@ class RemoteSet(rt.RSet):
         """Remove an item from the StringSet if added. Else, raise a remote exception."""
         try:
             self._storage_.remove(item)
+            self._save()
             if self._iterator:
                 self._iterator.mark_modified()
         except KeyError as error:
@@ -51,6 +64,7 @@ class RemoteSet(rt.RSet):
     def add(self, item: str, current: Optional[Ice.Current] = None) -> None:
         """Add a new string to the StringSet."""
         self._storage_.add(item)
+        self._save()
         if self._iterator:
             self._iterator.mark_modified()
 
@@ -58,6 +72,7 @@ class RemoteSet(rt.RSet):
         """Remove and return an element from the storage."""
         try:
             item = self._storage_.pop()
+            self._save()
             if self._iterator:
                 self._iterator.mark_modified()
             return item
