@@ -1,17 +1,22 @@
-# remotedict.py
-import RemoteTypes as rt
+"""Module for the RemoteDict class implementation."""
+
 from typing import Optional
 import Ice
 import json
 import os
+import RemoteTypes as rt
 
 class RemoteDictIterator(rt.Iterable):
+    """Iterator for the RemoteDict class."""
+
     def __init__(self, storage):
+        """Initialize the iterator with the storage."""
         self._storage = storage
         self._iterator = iter(storage.items())
         self._modified = False
 
     def next(self, current: Optional[Ice.Current] = None) -> str:
+        """Return the next item in the iterator."""
         if self._modified:
             raise rt.CancelIteration()
         try:
@@ -21,28 +26,36 @@ class RemoteDictIterator(rt.Iterable):
             raise rt.StopIteration()
 
     def mark_modified(self):
+        """Mark the iterator as modified."""
         self._modified = True
 
 class RemoteDict(rt.RDict):
+    """Implementation of the remote interface RDict."""
+
     def __init__(self, identifier: str) -> None:
+        """Initialize a RemoteDict with an empty dictionary."""
         self._storage = {}
         self.id_ = identifier
         self._iterator = None
         self._load()
 
     def _load(self):
+        """Load the dictionary from a JSON file."""
         if os.path.exists(f"{self.id_}.json"):
             with open(f"{self.id_}.json", "r") as f:
                 self._storage = json.load(f)
 
     def _save(self):
+        """Save the dictionary to a JSON file."""
         with open(f"{self.id_}.json", "w") as f:
             json.dump(self._storage, f)
 
     def identifier(self, current: Optional[Ice.Current] = None) -> str:
+        """Return the identifier of the object."""
         return self.id_
 
     def remove(self, item: str, current: Optional[Ice.Current] = None) -> None:
+        """Remove an item from the dictionary if added. Else, raise a remote exception."""
         if item in self._storage:
             del self._storage[item]
             self._save()
@@ -52,31 +65,38 @@ class RemoteDict(rt.RDict):
             raise rt.KeyError(item)
 
     def length(self, current: Optional[Ice.Current] = None) -> int:
+        """Return the number of elements in the dictionary."""
         return len(self._storage)
 
     def contains(self, item: str, current: Optional[Ice.Current] = None) -> bool:
+        """Check the pertenence of an item to the dictionary."""
         return item in self._storage
 
     def hash(self, current: Optional[Ice.Current] = None) -> int:
+        """Calculate a hash from the content of the internal dictionary."""
         return hash(frozenset(self._storage.items()))
 
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
+        """Create an iterable object."""
         self._iterator = RemoteDictIterator(self._storage)
         return self._iterator
 
     def setItem(self, key: str, item: str, current: Optional[Ice.Current] = None) -> None:
+        """Set an item in the dictionary."""
         self._storage[key] = item
         self._save()
         if self._iterator:
             self._iterator.mark_modified()
 
     def getItem(self, key: str, current: Optional[Ice.Current] = None) -> str:
+        """Get an item from the dictionary."""
         if key in self._storage:
             return self._storage[key]
         else:
             raise rt.KeyError(key)
 
     def pop(self, key: str, current: Optional[Ice.Current] = None) -> str:
+        """Remove and return an item from the dictionary."""
         if key in self._storage:
             value = self._storage.pop(key)
             self._save()
