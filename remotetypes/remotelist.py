@@ -1,91 +1,111 @@
-# remotelist.py
-import RemoteTypes as rt
+"""Module for the RemoteList class implementation."""
+
 from typing import Optional
-import Ice
 import json
 import os
+import Ice
+import RemoteTypes as rt
 
 class RemoteListIterator(rt.Iterable):
+    """Iterator for the RemoteList class."""
+
     def __init__(self, storage):
+        """Initialize the iterator with the storage."""
         self._storage = storage
         self._iterator = iter(storage)
         self._modified = False
 
     def next(self, current: Optional[Ice.Current] = None) -> str:
+        """Return the next item in the iterator."""
         if self._modified:
             raise rt.CancelIteration()
         try:
             return next(self._iterator)
-        except StopIteration:
-            raise rt.StopIteration()
+        except StopIteration as exc:
+            raise rt.StopIteration() from exc
 
     def mark_modified(self):
+        """Mark the iterator as modified."""
         self._modified = True
 
 class RemoteList(rt.RList):
+    """Implementation of the remote interface RList."""
+
     def __init__(self, identifier: str) -> None:
+        """Initialize a RemoteList with an empty list."""
         self._storage = []
         self.id_ = identifier
         self._iterator = None
         self._load()
 
     def _load(self):
+        """Load the list from a JSON file."""
         if os.path.exists(f"{self.id_}.json"):
-            with open(f"{self.id_}.json", "r") as f:
+            with open(f"{self.id_}.json", "r", encoding="utf-8") as f:
                 self._storage = json.load(f)
 
     def _save(self):
-        with open(f"{self.id_}.json", "w") as f:
+        """Save the list to a JSON file."""
+        with open(f"{self.id_}.json", "w", encoding="utf-8") as f:
             json.dump(self._storage, f)
 
     def identifier(self, current: Optional[Ice.Current] = None) -> str:
+        """Return the identifier of the object."""
         return self.id_
 
     def remove(self, item: str, current: Optional[Ice.Current] = None) -> None:
+        """Remove an item from the list."""
         try:
             self._storage.remove(item)
             self._save()
             if self._iterator:
                 self._iterator.mark_modified()
-        except ValueError:
-            raise rt.KeyError(item)
+        except ValueError as exc:
+            raise rt.KeyError(item) from exc
 
     def length(self, current: Optional[Ice.Current] = None) -> int:
+        """Return the number of elements in the list."""
         return len(self._storage)
 
     def contains(self, item: str, current: Optional[Ice.Current] = None) -> bool:
+        """Check if the list contains the specified item."""
         return item in self._storage
 
     def hash(self, current: Optional[Ice.Current] = None) -> int:
+        """Calculate a hash from the content of the list."""
         return hash(tuple(self._storage))
 
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
+        """Create an iterable object."""
         self._iterator = RemoteListIterator(self._storage)
         return self._iterator
 
     def append(self, item: str, current: Optional[Ice.Current] = None) -> None:
+        """Add a new item to the end of the list."""
         self._storage.append(item)
         self._save()
         if self._iterator:
             self._iterator.mark_modified()
 
     def pop(self, index: Optional[int] = Ice.Unset, current: Optional[Ice.Current] = None) -> str:
+        """Remove and return an item from the list."""
         if index is Ice.Unset:
             item = self._storage.pop()
         else:
             try:
                 item = self._storage.pop(index)
-            except IndexError:
-                raise rt.IndexError("Index out of range")
-            except TypeError:
-                raise rt.TypeError("Invalid index type")
+            except IndexError as exc:
+                raise rt.IndexError("Index out of range") from exc
+            except TypeError as exc:
+                raise rt.TypeError("Invalid index type") from exc
         self._save()
         if self._iterator:
             self._iterator.mark_modified()
         return item
 
-    def getItem(self, index: int, current: Optional[Ice.Current] = None) -> str:
+    def get_item(self, index: int, current: Optional[Ice.Current] = None) -> str:
+        """Return the item at the specified index."""
         try:
             return self._storage[index]
-        except IndexError:
-            raise rt.IndexError("Index out of range")
+        except IndexError as exc:
+            raise rt.IndexError("Index out of range") from exc
