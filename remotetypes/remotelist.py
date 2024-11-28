@@ -49,6 +49,11 @@ class RemoteList(rt.RList):
         with open(f"{self.id_}.json", "w", encoding="utf-8") as f:
             json.dump(self._storage, f)
 
+    def _clear(self):
+        """Clear the JSON file."""
+        if os.path.exists(f"{self.id_}.json"):
+            os.remove(f"{self.id_}.json")
+
     def identifier(self, current: Optional[Ice.Current] = None) -> str:
         """Return the identifier of the object."""
         return self.id_
@@ -87,9 +92,9 @@ class RemoteList(rt.RList):
         if self._iterator:
             self._iterator.mark_modified()
 
-    def pop(self, index: Optional[int] = Ice.Unset, current: Optional[Ice.Current] = None) -> str:
+    def pop(self, index: Optional[int] = None, current: Optional[Ice.Current] = None) -> str:
         """Remove and return an item from the list."""
-        if index is None:
+        if index is None or index is Ice.Unset:
             item = self._storage.pop()
         else:
             try:

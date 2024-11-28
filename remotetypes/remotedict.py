@@ -50,6 +50,11 @@ class RemoteDict(rt.RDict):
         with open(f"{self.id_}.json", "w") as f:
             json.dump(self._storage, f)
 
+    def _clear(self):
+        """Clear the JSON file."""
+        if os.path.exists(f"{self.id_}.json"):
+            os.remove(f"{self.id_}.json")
+
     def identifier(self, current: Optional[Ice.Current] = None) -> str:
         """Return the identifier of the object."""
         return self.id_
