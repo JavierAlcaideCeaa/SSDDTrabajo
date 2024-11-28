@@ -29,6 +29,11 @@ class RemoteSet(rt.RSet):
         with open(f"{self.id_}.json", "w", encoding="utf-8") as f:
             json.dump(list(self._storage_), f)
 
+    def _clear(self):
+        """Clear the JSON file."""
+        if os.path.exists(f"{self.id_}.json"):
+            os.remove(f"{self.id_}.json")
+
     def identifier(self, current: Optional[Ice.Current] = None) -> str:
         """Return the identifier of the object."""
         return self.id_
@@ -64,13 +69,16 @@ class RemoteSet(rt.RSet):
 
     def add(self, item: str, current: Optional[Ice.Current] = None) -> None:
         """Add a new string to the StringSet."""
-        self._storage_.add(item)
-        self._save()
-        if self._iterator:
-            self._iterator.mark_modified()
+        if item not in self._storage_:
+            self._storage_.add(item)
+            self._save()
+            if self._iterator:
+                self._iterator.mark_modified()
 
     def pop(self, current: Optional[Ice.Current] = None) -> str:
         """Remove and return an element from the storage."""
+        if not self._storage_:
+            raise rt.KeyError("Set is empty")
         try:
             item = self._storage_.pop()
             self._save()

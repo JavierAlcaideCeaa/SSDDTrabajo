@@ -12,6 +12,11 @@ class TestRemoteSet(unittest.TestCase):
     def setUp(self):
         """Set up a RemoteSet instance."""
         self.remote_set = RemoteSet("test_set")
+        self.remote_set._clear()  # Clear the JSON file before each test
+
+    def tearDown(self):
+        """Clean up after each test."""
+        self.remote_set._clear()  # Clear the JSON file after each test
 
     def test_remove_existing_element(self):
         """Test RSet.remove removes an existing element."""
