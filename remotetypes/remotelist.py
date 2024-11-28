@@ -89,7 +89,7 @@ class RemoteList(rt.RList):
 
     def pop(self, index: Optional[int] = Ice.Unset, current: Optional[Ice.Current] = None) -> str:
         """Remove and return an item from the list."""
-        if index is Ice.Unset:
+        if index is None:
             item = self._storage.pop()
         else:
             try:
