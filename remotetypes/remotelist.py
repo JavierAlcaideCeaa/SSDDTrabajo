@@ -1,81 +1,111 @@
-"""Module for the RemoteSet class implementation."""
+"""Module for the RemoteList class implementation."""
 
 from typing import Optional
 import json
 import os
 import Ice
-import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
-from remotetypes.customset import StringSet
-from remotetypes.iterable import Iterable
+import RemoteTypes as rt
 
-class RemoteSet(rt.RSet):
-    """Implementation of the remote interface RSet."""
+class RemoteListIterator(rt.Iterable):
+    """Iterator for the RemoteList class."""
+
+    def __init__(self, storage):
+        """Initialize the iterator with the storage."""
+        self._storage = storage
+        self._iterator = iter(storage)
+        self._modified = False
+
+    def next(self, current: Optional[Ice.Current] = None) -> str:
+        """Return the next item in the iterator."""
+        if self._modified:
+            raise rt.CancelIteration()
+        try:
+            return next(self._iterator)
+        except StopIteration as exc:
+            raise rt.StopIteration() from exc
+
+    def mark_modified(self):
+        """Mark the iterator as modified."""
+        self._modified = True
+
+class RemoteList(rt.RList):
+    """Implementation of the remote interface RList."""
 
     def __init__(self, identifier: str) -> None:
-        """Initialise a RemoteSet with an empty StringSet."""
-        self._storage_ = StringSet()
+        """Initialize a RemoteList with an empty list."""
+        self._storage = []
         self.id_ = identifier
         self._iterator = None
         self._load()
 
     def _load(self):
-        """Load the set from a JSON file."""
+        """Load the list from a JSON file."""
         if os.path.exists(f"{self.id_}.json"):
             with open(f"{self.id_}.json", "r", encoding="utf-8") as f:
-                self._storage_ = StringSet(json.load(f))
+                self._storage = json.load(f)
 
     def _save(self):
-        """Save the set to a JSON file."""
+        """Save the list to a JSON file."""
         with open(f"{self.id_}.json", "w", encoding="utf-8") as f:
-            json.dump(list(self._storage_), f)
+            json.dump(self._storage, f)
 
     def identifier(self, current: Optional[Ice.Current] = None) -> str:
         """Return the identifier of the object."""
         return self.id_
 
     def remove(self, item: str, current: Optional[Ice.Current] = None) -> None:
-        """Remove an item from the StringSet if added. Else, raise a remote exception."""
+        """Remove an item from the list."""
         try:
-            self._storage_.remove(item)
+            self._storage.remove(item)
             self._save()
             if self._iterator:
                 self._iterator.mark_modified()
-        except KeyError as error:
-            raise rt.KeyError(item) from error
+        except ValueError as exc:
+            raise rt.KeyError(item) from exc
 
     def length(self, current: Optional[Ice.Current] = None) -> int:
-        """Return the number of elements in the StringSet."""
-        return len(self._storage_)
+        """Return the number of elements in the list."""
+        return len(self._storage)
 
     def contains(self, item: str, current: Optional[Ice.Current] = None) -> bool:
-        """Check the pertenence of an item to the StringSet."""
-        return item in self._storage_
+        """Check if the list contains the specified item."""
+        return item in self._storage
 
     def hash(self, current: Optional[Ice.Current] = None) -> int:
-        """Calculate a hash from the content of the internal StringSet."""
-        contents = list(self._storage_)
-        contents.sort()
-        return hash(repr(contents))
+        """Calculate a hash from the content of the list."""
+        return hash(tuple(self._storage))
 
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
         """Create an iterable object."""
-        self._iterator = Iterable(self._storage_)
+        self._iterator = RemoteListIterator(self._storage)
         return self._iterator
 
-    def add(self, item: str, current: Optional[Ice.Current] = None) -> None:
-        """Add a new string to the StringSet."""
-        self._storage_.add(item)
+    def append(self, item: str, current: Optional[Ice.Current] = None) -> None:
+        """Add a new item to the end of the list."""
+        self._storage.append(item)
         self._save()
         if self._iterator:
             self._iterator.mark_modified()
 
-    def pop(self, current: Optional[Ice.Current] = None) -> str:
-        """Remove and return an element from the storage."""
+    def pop(self, index: Optional[int] = Ice.Unset, current: Optional[Ice.Current] = None) -> str:
+        """Remove and return an item from the list."""
+        if index is None:
+            item = self._storage.pop()
+        else:
+            try:
+                item = self._storage.pop(index)
+            except IndexError as exc:
+                raise rt.IndexError("Index out of range") from exc
+            except TypeError as exc:
+                raise rt.TypeError("Invalid index type") from exc
+        self._save()
+        if self._iterator:
+            self._iterator.mark_modified()
+        return item
+
+    def get_item(self, index: int, current: Optional[Ice.Current] = None) -> str:
+        """Return the item at the specified index."""
         try:
-            item = self._storage_.pop()
-            self._save()
-            if self._iterator:
-                self._iterator.mark_modified()
-            return item
-        except KeyError as exc:
-            raise rt.KeyError() from exc        
+            return self._storage[index]
+        except IndexError as exc:
+            raise rt.IndexError("Index out of range") from exc

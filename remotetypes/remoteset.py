@@ -1,12 +1,12 @@
 """Module for the RemoteSet class implementation."""
 
 from typing import Optional
-import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
-from remotetypes.customset import StringSet
-from remotetypes.iterable import Iterable
 import json
 import os
 import Ice
+import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
+from remotetypes.customset import StringSet
+from remotetypes.iterable import Iterable
 
 class RemoteSet(rt.RSet):
     """Implementation of the remote interface RSet."""
@@ -19,12 +19,14 @@ class RemoteSet(rt.RSet):
         self._load()
 
     def _load(self):
+        """Load the set from a JSON file."""
         if os.path.exists(f"{self.id_}.json"):
-            with open(f"{self.id_}.json", "r") as f:
+            with open(f"{self.id_}.json", "r", encoding="utf-8") as f:
                 self._storage_ = StringSet(json.load(f))
 
     def _save(self):
-        with open(f"{self.id_}.json", "w") as f:
+        """Save the set to a JSON file."""
+        with open(f"{self.id_}.json", "w", encoding="utf-8") as f:
             json.dump(list(self._storage_), f)
 
     def identifier(self, current: Optional[Ice.Current] = None) -> str:

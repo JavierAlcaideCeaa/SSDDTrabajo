@@ -1,5 +1,4 @@
 # factory.py
-# factory.py
 import RemoteTypes as rt
 from typing import Optional
 import Ice
@@ -11,6 +10,10 @@ class Factory(rt.Factory):
     def __init__(self):
         self._instances = {}
         self._adapter = None
+
+    def set_adapter(self, adapter: Ice.ObjectAdapter):
+        """Set the adapter for the factory."""
+        self._adapter = adapter
 
     def get(self, typeName: rt.TypeName, identifier: Optional[str], current: Optional[Ice.Current] = None):
         if self._adapter is None:
@@ -24,14 +27,18 @@ class Factory(rt.Factory):
 
         if typeName == rt.TypeName.RList:
             obj = RemoteList(identifier)
+            proxy = self._adapter.addWithUUID(obj)
+            casted_proxy = rt.RListPrx.checkedCast(proxy)
         elif typeName == rt.TypeName.RDict:
             obj = RemoteDict(identifier)
+            proxy = self._adapter.addWithUUID(obj)
+            casted_proxy = rt.RDictPrx.checkedCast(proxy)
         elif typeName == rt.TypeName.RSet:
             obj = RemoteSet(identifier)
+            proxy = self._adapter.addWithUUID(obj)
+            casted_proxy = rt.RSetPrx.checkedCast(proxy)
         else:
             raise rt.TypeError("Invalid type")
 
-        proxy = self._adapter.addWithUUID(obj)
-        casted_proxy = rt.RTypePrx.checkedCast(proxy)
         self._instances[identifier] = casted_proxy
         return casted_proxy
