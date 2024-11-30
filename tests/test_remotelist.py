@@ -1,10 +1,10 @@
 """Tests for RemoteList class."""
 
 import unittest
+import os
+import Ice
 import RemoteTypes as rt
 from remotetypes.remotelist import RemoteList
-from typing import Optional
-import Ice
 
 class TestRemoteList(unittest.TestCase):
     """Test cases for the RemoteList class."""
@@ -12,11 +12,16 @@ class TestRemoteList(unittest.TestCase):
     def setUp(self):
         """Set up a RemoteList instance."""
         self.remote_list = RemoteList("test_list")
-        self.remote_list._clear()  # Clear the JSON file before each test
+        self._clear_remote_list()  # Clear the JSON file before each test
 
     def tearDown(self):
         """Clean up after each test."""
-        self.remote_list._clear()  # Clear the JSON file after each test
+        self._clear_remote_list()  # Clear the JSON file after each test
+
+    def _clear_remote_list(self):
+        """Clear the JSON file for the RemoteList."""
+        if os.path.exists(f"{self.remote_list.id_}.json"):
+            os.remove(f"{self.remote_list.id_}.json")
 
     def test_remove_existing_element(self):
         """Test RList.remove removes an existing element."""

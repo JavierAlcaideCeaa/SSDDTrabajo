@@ -1,9 +1,9 @@
 """Module for the RemoteDict class implementation."""
 
 from typing import Optional
-import Ice
 import json
 import os
+import Ice
 import RemoteTypes as rt
 
 class RemoteDictIterator(rt.Iterable):
@@ -22,8 +22,8 @@ class RemoteDictIterator(rt.Iterable):
         try:
             key, value = next(self._iterator)
             return f"{key}: {value}"
-        except StopIteration:
-            raise rt.StopIteration()
+        except StopIteration as exc:
+            raise rt.StopIteration() from exc
 
     def mark_modified(self):
         """Mark the iterator as modified."""
@@ -42,12 +42,12 @@ class RemoteDict(rt.RDict):
     def _load(self):
         """Load the dictionary from a JSON file."""
         if os.path.exists(f"{self.id_}.json"):
-            with open(f"{self.id_}.json", "r") as f:
+            with open(f"{self.id_}.json", "r", encoding="utf-8") as f:
                 self._storage = json.load(f)
 
     def _save(self):
         """Save the dictionary to a JSON file."""
-        with open(f"{self.id_}.json", "w") as f:
+        with open(f"{self.id_}.json", "w", encoding="utf-8") as f:
             json.dump(self._storage, f)
 
     def _clear(self):
@@ -86,19 +86,18 @@ class RemoteDict(rt.RDict):
         self._iterator = RemoteDictIterator(self._storage)
         return self._iterator
 
-    def setItem(self, key: str, item: str, current: Optional[Ice.Current] = None) -> None:
+    def set_item(self, key: str, item: str, current: Optional[Ice.Current] = None) -> None:
         """Set an item in the dictionary."""
         self._storage[key] = item
         self._save()
         if self._iterator:
             self._iterator.mark_modified()
 
-    def getItem(self, key: str, current: Optional[Ice.Current] = None) -> str:
+    def get_item(self, key: str, current: Optional[Ice.Current] = None) -> str:
         """Get an item from the dictionary."""
         if key in self._storage:
             return self._storage[key]
-        else:
-            raise rt.KeyError(key)
+        raise rt.KeyError(key)
 
     def pop(self, key: str, current: Optional[Ice.Current] = None) -> str:
         """Remove and return an item from the dictionary."""
@@ -108,5 +107,4 @@ class RemoteDict(rt.RDict):
             if self._iterator:
                 self._iterator.mark_modified()
             return value
-        else:
-            raise rt.KeyError(key)
+        raise rt.KeyError(key)

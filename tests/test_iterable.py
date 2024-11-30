@@ -3,8 +3,6 @@
 import unittest
 import RemoteTypes as rt
 from remotetypes.iterable import Iterable
-from typing import Optional
-import Ice
 
 class TestIterable(unittest.TestCase):
     """Test cases for the Iterable class."""

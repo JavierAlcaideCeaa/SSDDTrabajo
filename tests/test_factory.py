@@ -11,7 +11,9 @@ class TestFactory(unittest.TestCase):
     def setUp(self):
         """Set up the Ice communicator and factory."""
         self.communicator = Ice.initialize()
-        self.adapter = self.communicator.createObjectAdapterWithEndpoints("FactoryAdapter", "default -p 0")
+        self.adapter = self.communicator.createObjectAdapterWithEndpoints(
+            "FactoryAdapter", "default -p 0"
+        )
         self.adapter.activate()
         self.factory = Factory()
         self.factory.set_adapter(self.adapter)

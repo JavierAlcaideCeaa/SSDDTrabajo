@@ -1,10 +1,9 @@
 """Tests for RemoteSet class."""
 
 import unittest
+import os
 import RemoteTypes as rt
 from remotetypes.remoteset import RemoteSet
-from typing import Optional
-import Ice
 
 class TestRemoteSet(unittest.TestCase):
     """Test cases for the RemoteSet class."""
@@ -12,11 +11,16 @@ class TestRemoteSet(unittest.TestCase):
     def setUp(self):
         """Set up a RemoteSet instance."""
         self.remote_set = RemoteSet("test_set")
-        self.remote_set._clear()  # Clear the JSON file before each test
+        self._clear_remote_set()  # Clear the JSON file before each test
 
     def tearDown(self):
         """Clean up after each test."""
-        self.remote_set._clear()  # Clear the JSON file after each test
+        self._clear_remote_set()  # Clear the JSON file after each test
+
+    def _clear_remote_set(self):
+        """Clear the JSON file for the RemoteSet."""
+        if os.path.exists(f"{self.remote_set.id_}.json"):
+            os.remove(f"{self.remote_set.id_}.json")
 
     def test_remove_existing_element(self):
         """Test RSet.remove removes an existing element."""
