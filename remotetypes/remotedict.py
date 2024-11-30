@@ -5,29 +5,7 @@ import json
 import os
 import Ice
 import RemoteTypes as rt
-
-class RemoteDictIterator(rt.Iterable):
-    """Iterator for the RemoteDict class."""
-
-    def __init__(self, storage):
-        """Initialize the iterator with the storage."""
-        self._storage = storage
-        self._iterator = iter(storage.items())
-        self._modified = False
-
-    def next(self, current: Optional[Ice.Current] = None) -> str:
-        """Return the next item in the iterator."""
-        if self._modified:
-            raise rt.CancelIteration()
-        try:
-            key, value = next(self._iterator)
-            return f"{key}: {value}"
-        except StopIteration as exc:
-            raise rt.StopIteration() from exc
-
-    def mark_modified(self):
-        """Mark the iterator as modified."""
-        self._modified = True
+from remotetypes.iterable import Iterable
 
 class RemoteDict(rt.RDict):
     """Implementation of the remote interface RDict."""
@@ -83,7 +61,7 @@ class RemoteDict(rt.RDict):
 
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
         """Create an iterable object."""
-        self._iterator = RemoteDictIterator(self._storage)
+        self._iterator = Iterable(list(self._storage.items()))
         return self._iterator
 
     def set_item(self, key: str, item: str, current: Optional[Ice.Current] = None) -> None:

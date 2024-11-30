@@ -5,28 +5,7 @@ import json
 import os
 import Ice
 import RemoteTypes as rt
-
-class RemoteListIterator(rt.Iterable):
-    """Iterator for the RemoteList class."""
-
-    def __init__(self, storage):
-        """Initialize the iterator with the storage."""
-        self._storage = storage
-        self._iterator = iter(storage)
-        self._modified = False
-
-    def next(self, current: Optional[Ice.Current] = None) -> str:
-        """Return the next item in the iterator."""
-        if self._modified:
-            raise rt.CancelIteration()
-        try:
-            return next(self._iterator)
-        except StopIteration as exc:
-            raise rt.StopIteration() from exc
-
-    def mark_modified(self):
-        """Mark the iterator as modified."""
-        self._modified = True
+from remotetypes.iterable import Iterable
 
 class RemoteList(rt.RList):
     """Implementation of the remote interface RList."""
@@ -82,7 +61,7 @@ class RemoteList(rt.RList):
 
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
         """Create an iterable object."""
-        self._iterator = RemoteListIterator(self._storage)
+        self._iterator = Iterable(self._storage)
         return self._iterator
 
     def append(self, item: str, current: Optional[Ice.Current] = None) -> None:
