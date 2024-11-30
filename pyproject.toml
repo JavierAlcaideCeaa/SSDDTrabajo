@@ -45,6 +45,5 @@ ignored-classes = ["Ice"]
 module = [
   "Ice",
   "RemoteTypes"
-  "remotetypes_ice"
 ]
 ignore_missing_imports = true
