@@ -1,3 +1,5 @@
+"""Initialization module for the RemoteTypes package."""
+
 import os
 import Ice
 

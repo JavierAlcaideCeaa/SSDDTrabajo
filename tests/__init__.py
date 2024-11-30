@@ -1,4 +1,5 @@
-"""remoteset test module."""
+"""Initialization module for the RemoteTypes package."""
+
 import os
 import Ice
 
@@ -9,5 +10,5 @@ except ImportError:
         os.path.dirname(__file__),
         "remotetypes.ice",
     )
-    Ice.loadSlice(slice_path)
+    Ice.loadSlice(f"-I{os.path.dirname(slice_path)} {slice_path}")
     import remotetypes_ice  # noqa: F401
