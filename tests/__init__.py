@@ -1,4 +1,4 @@
-"""Initialization module for the RemoteTypes package."""
+"""Initialization module for the tests package."""
 
 import os
 import Ice
@@ -8,7 +8,7 @@ try:
 except ImportError:
     slice_path = os.path.join(
         os.path.dirname(__file__),
-        "remotetypes.ice",
+        "../remotetypes/remotetypes.ice",
     )
     Ice.loadSlice(f"-I{os.path.dirname(slice_path)} {slice_path}")
     import remotetypes_ice  # noqa: F401
