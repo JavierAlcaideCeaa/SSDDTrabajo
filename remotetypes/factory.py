@@ -28,7 +28,7 @@ class Factory(rt.Factory):
                 raise RuntimeError(
                     "Adapter is not set, and no adapter was found in the current context."
                 )
-                
+        
         if identifier in self._instances:
             return self._instances[identifier]
 

@@ -2,7 +2,6 @@
 
 import unittest
 import os
-import Ice
 import RemoteTypes as rt
 from remotetypes.remotelist import RemoteList
 
