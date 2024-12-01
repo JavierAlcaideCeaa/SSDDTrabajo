@@ -1,6 +1,6 @@
 """Module for the RemoteList class implementation."""
 
-from typing import Optional
+from typing import Optional, List
 import json
 import os
 import Ice
@@ -12,23 +12,23 @@ class RemoteList(rt.RList):
 
     def __init__(self, identifier: str) -> None:
         """Initialize a RemoteList with an empty list."""
-        self._storage = []
+        self._storage: List[str] = []
         self.id_ = identifier
         self._iterator = None
-        self._load()
+        self._load_data()
 
-    def _load(self):
+    def _load_data(self):
         """Load the list from a JSON file."""
         if os.path.exists(f"{self.id_}.json"):
             with open(f"{self.id_}.json", "r", encoding="utf-8") as f:
                 self._storage = json.load(f)
 
-    def _save(self):
+    def _save_data(self):
         """Save the list to a JSON file."""
         with open(f"{self.id_}.json", "w", encoding="utf-8") as f:
             json.dump(self._storage, f)
 
-    def _clear(self):
+    def _clear_data(self):
         """Clear the JSON file."""
         if os.path.exists(f"{self.id_}.json"):
             os.remove(f"{self.id_}.json")
@@ -41,7 +41,7 @@ class RemoteList(rt.RList):
         """Remove an item from the list."""
         try:
             self._storage.remove(item)
-            self._save()
+            self._save_data()
             if self._iterator:
                 self._iterator.mark_modified()
         except ValueError as exc:
@@ -67,7 +67,7 @@ class RemoteList(rt.RList):
     def append(self, item: str, current: Optional[Ice.Current] = None) -> None:
         """Add a new item to the end of the list."""
         self._storage.append(item)
-        self._save()
+        self._save_data()
         if self._iterator:
             self._iterator.mark_modified()
 
@@ -82,7 +82,7 @@ class RemoteList(rt.RList):
                 raise rt.IndexError("Index out of range") from exc
             except TypeError as exc:
                 raise rt.TypeError("Invalid index type") from exc
-        self._save()
+        self._save_data()
         if self._iterator:
             self._iterator.mark_modified()
         return item

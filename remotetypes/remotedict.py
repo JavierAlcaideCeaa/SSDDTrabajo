@@ -1,6 +1,6 @@
 """Module for the RemoteDict class implementation."""
 
-from typing import Optional
+from typing import Optional, Dict
 import json
 import os
 import Ice
@@ -12,23 +12,23 @@ class RemoteDict(rt.RDict):
 
     def __init__(self, identifier: str) -> None:
         """Initialize a RemoteDict with an empty dictionary."""
-        self._storage = {}
+        self._storage: Dict[str, str] = {}
         self.id_ = identifier
         self._iterator = None
-        self._load()
+        self._load_storage()
 
-    def _load(self):
+    def _load_storage(self):
         """Load the dictionary from a JSON file."""
         if os.path.exists(f"{self.id_}.json"):
             with open(f"{self.id_}.json", "r", encoding="utf-8") as f:
                 self._storage = json.load(f)
 
-    def _save(self):
+    def _save_storage(self):
         """Save the dictionary to a JSON file."""
         with open(f"{self.id_}.json", "w", encoding="utf-8") as f:
             json.dump(self._storage, f)
 
-    def _clear(self):
+    def _clear_storage(self):
         """Clear the JSON file."""
         if os.path.exists(f"{self.id_}.json"):
             os.remove(f"{self.id_}.json")
@@ -41,7 +41,7 @@ class RemoteDict(rt.RDict):
         """Remove an item from the dictionary if added. Else, raise a remote exception."""
         if item in self._storage:
             del self._storage[item]
-            self._save()
+            self._save_storage()
             if self._iterator:
                 self._iterator.mark_modified()
         else:
@@ -67,7 +67,7 @@ class RemoteDict(rt.RDict):
     def set_item(self, key: str, item: str, current: Optional[Ice.Current] = None) -> None:
         """Set an item in the dictionary."""
         self._storage[key] = item
-        self._save()
+        self._save_storage()
         if self._iterator:
             self._iterator.mark_modified()
 
@@ -81,7 +81,7 @@ class RemoteDict(rt.RDict):
         """Remove and return an item from the dictionary."""
         if key in self._storage:
             value = self._storage.pop(key)
-            self._save()
+            self._save_storage()
             if self._iterator:
                 self._iterator.mark_modified()
             return value
