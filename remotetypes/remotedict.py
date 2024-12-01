@@ -1,4 +1,4 @@
-"""Module for the RemoteDict class implementation."""
+""""Module for the RemoteDict class implementation."""
 
 from typing import Optional, Dict
 import json
