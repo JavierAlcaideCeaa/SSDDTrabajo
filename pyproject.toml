@@ -29,7 +29,7 @@ linters = ["mypy", "pylint", "ruff"]
 # Tools configuration
 [tool.ruff]
 line-length = 120
-exclude = ["remotetypes/remotetypes_ice.py"]
+exclude = ["remotetypes_ice.py"]
 
 [tool.ruff.lint]
 # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.

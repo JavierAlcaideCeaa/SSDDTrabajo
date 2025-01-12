@@ -62,7 +62,8 @@ class RemoteList(rt.RList):
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
         """Create an iterable object."""
         self._iterator = Iterable(self._storage)
-        return self._iterator
+        proxy = current.adapter.addWithUUID(self._iterator)
+        return rt.IterablePrx.checkedCast(proxy)
 
     def append(self, item: str, current: Optional[Ice.Current] = None) -> None:
         """Add a new item to the end of the list."""
@@ -87,7 +88,7 @@ class RemoteList(rt.RList):
             self._iterator.mark_modified()
         return item
 
-    def get_item(self, index: int, current: Optional[Ice.Current] = None) -> str:
+    def getItem(self, index: int, current: Optional[Ice.Current] = None) -> str:
         """Return the item at the specified index."""
         try:
             return self._storage[index]

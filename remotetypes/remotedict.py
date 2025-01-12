@@ -62,16 +62,17 @@ class RemoteDict(rt.RDict):
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
         """Create an iterable object."""
         self._iterator = Iterable(list(self._storage.items()))
-        return self._iterator
+        proxy = current.adapter.addWithUUID(self._iterator)
+        return rt.IterablePrx.checkedCast(proxy)
 
-    def set_item(self, key: str, item: str, current: Optional[Ice.Current] = None) -> None:
+    def setItem(self, key: str, item: str, current: Optional[Ice.Current] = None) -> None:
         """Set an item in the dictionary."""
         self._storage[key] = item
         self._save_storage()
         if self._iterator:
             self._iterator.mark_modified()
 
-    def get_item(self, key: str, current: Optional[Ice.Current] = None) -> str:
+    def getItem(self, key: str, current: Optional[Ice.Current] = None) -> str:
         """Get an item from the dictionary."""
         if key in self._storage:
             return self._storage[key]
