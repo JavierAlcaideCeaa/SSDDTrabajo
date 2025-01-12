@@ -84,22 +84,33 @@ Tras esto activaremos el entorno virtual e instalaremos las dependencias.
 Para iniciar el servidor utilizaremos kafka si no esta ya `kafka-server-start.sh /path/to/kafka/config/server.properties`, e iniciaremos el servidor con `remotetypes --Ice.Config=config/remotetypes.config` y en otra terminal, `sudo docker-compose up` tras esto iniciamos el cliente `python3 cliente.py`y realizamos el envio de los ejercicios a realizar, que son los siguientes:
 
 remoteDict:
+
 setItem: `echo '[{"id": 1, "object_type": "RDict", "object_identifier": "test_dict", "operation": "setItem", "args": {"key": "clave1", "item": "valor1"}}]' | kcat -P -b localhost:9092 -t operation`
+
 getItem: `echo '[{"id": 2, "object_type": "RDict", "object_identifier": "test_dict", "operation": "getItem", "args": {"key": "clave1"}}]' | kcat -P -b localhost:9092 -t operation`
+
 remove : `echo '[{"id": 3, "object_type": "RDict", "object_identifier": "test_dict", "operation": "remove", "args": {"item": "clave1"}}]' | kcat -P -b localhost:9092 -t operation`
 
 remotelist:
+
 append: `echo '[{"id": 4, "object_type": "RList", "object_identifier": "test_list", "operation": "append", "args": {"item": "valor1"}}]' | kcat -P -b localhost:9092 -t operation`
+
 getItem: `echo '[{"id": 5, "object_type": "RList", "object_identifier": "test_list", "operation": "getItem", "args": {"index": 0}}]' | kcat -P -b localhost:9092 -t operation`
+
 remove: `echo '[{"id": 6, "object_type": "RList", "object_identifier": "test_list", "operation": "remove", "args": {"item": "valor1"}}]' | kcat -P -b localhost:9092 -t operation`
 
 remoteSet:
+
 add: `echo '[{"id": 7, "object_type": "RSet", "object_identifier": "test_set", "operation": "add", "args": {"item": "valor1"}}]' | kcat -P -b localhost:9092 -t operation`
+
 contains: `echo '[{"id": 8, "object_type": "RSet", "object_identifier": "test_set", "operation": "contains", "args": {"item": "valor1"}}]' | kcat -P -b localhost:9092 -t operation`
+
 remove: `echo '[{"id": 9, "object_type": "RSet", "object_identifier": "test_set", "operation": "remove", "args": {"item": "valor1"}}]' | kcat -P -b localhost:9092 -t operations`
 
 iterable:
+
 `echo '[{"id": 10, "object_type": "RDict", "object_identifier": "test_dict", "operation": "iter"}]' | kcat -P -b localhost:9092 -t operation`
 
 Tras esto para comprobar los resultados utilizaremos el siguiente comando:
+
 `kcat -C -b localhost:9092 -t results -o beginning`
