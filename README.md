@@ -1,6 +1,4 @@
-# Plantilla de repositorio remote-types
-
-Plantilla para el laboratorio de SSDD 2024-2025
+# Remote-types
 
 ## Instalación
 
